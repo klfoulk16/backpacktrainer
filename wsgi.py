@@ -1,4 +1,5 @@
-from backpackingtrainer import app
+from backpackingtrainer import create_app
 
 if __name__ == "__main__":
+    app = create_app()
     app.run()
