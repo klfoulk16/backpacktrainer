@@ -1,1 +1,1 @@
-web: gunicorn backpackingtrainer:app
+web: gunicorn app:app
