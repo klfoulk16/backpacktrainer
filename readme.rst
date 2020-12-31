@@ -7,4 +7,37 @@ Problem/Solution:
 2. Listing all activities doesn't include the description. My plan was to parse the description for the weight and potentially other factors.
     a. Could list weight in title.
     b. Could specifically call all 'hike' activities using their id to get descriptions.
+
+# MVP
+
+# Create function that tests that strava_api.get_token() returns an active non-expired token
+
+# Create function that creates dataframe with important data from data download.
+    # test
+
+# pull data for each activity...see how info differs. Store valuable stuff in dataframe.
+    #test
+
+# Parse description into important parts and seperate into new df columns.
+
+# create data visualizations using the data
+    # weight vs distance
+    # weight vs speed
+    # weight vs height
+    # can I combine all of these?
+    # create list that displays all walks and flags a hike if it is abnormal 
+    # meaning I upped weight, elevation, speed, distance, etc
+    # parse out shoes and pain to flag hikes that got pain and see if anything was a big jump
+
+# Put the new things on the website to show.
+
+
+
+
+#Part 2:
+
+# create sqlite database to store this dataframe in
+
+# create function that checks to see if a new activity was added (and for new activities instead of all)
+    # then add new activity to db
     

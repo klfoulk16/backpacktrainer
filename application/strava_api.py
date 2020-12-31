@@ -1,8 +1,11 @@
-"""Starting to play with Strava API following this article: 
-https://medium.com/swlh/using-python-to-connect-to-stravas-api-and-analyse-your-activities-dummies-guide-5f49727aac86"""
+"""Grabbing My Athlete Data From Strava API"""
 
 import os
 from dotenv import load_dotenv
+import requests
+import json
+import time
+import pandas as pd
 
 # Get environment variables
 load_dotenv()
@@ -19,8 +22,6 @@ def get_initial_token(code):
     Pull the code from that second URL and pass it to this function.
     :type body: str
     """
-    import requests
-    import json
 
     # Make Strava auth API call with your
     # client_code, client_secret and code
@@ -45,11 +46,9 @@ def get_initial_token(code):
     print(data)
 
 
-def get_activities():
-    import requests
-    import json
-    import time
-    from pandas import json_normalize
+def get_token():
+    """Gets token either from file or by using refresh token if old one is expired.
+    """
 
     # Get the tokens from file to connect to Strava
     with open("strava_tokens.json") as json_file:
@@ -74,15 +73,68 @@ def get_activities():
             json.dump(new_strava_tokens, outfile)
         # Use new Strava tokens from now
         strava_tokens = new_strava_tokens
+    return strava_tokens
+
+
     # Loop through all activities
-    url = "https://www.strava.com/api/v3/activities"
-    access_token = strava_tokens["access_token"]
+    #url = "https://www.strava.com/api/v3/activities"
+    #access_token = strava_tokens["access_token"]
     # Get first page of activities from Strava with all fields
-    r = requests.get(url + "?access_token=" + access_token)
-    r = r.json()
+    #r = requests.get(url + "?access_token=" + access_token)
+    #r = r.json()
 
-    df = json_normalize(r)
-    df.to_csv("strava_activities_all_fields.csv")
+    #df = pd.json_normalize(r)
+    #df.to_csv("strava_activities_all_fields.csv")
+
+def get_activities(strava_tokens):
+    # loop through activities
+    page = 1
+    url = "https://www.strava.com/api/v3/activities"
+    access_token = strava_tokens['access_token']
 
 
-get_activities()
+    # create dataframe to store activity data
+
+    activities = pd.DataFrame(
+        columns = [
+            "id",
+            "start_date_local",
+            "type",
+            "distance",
+            "moving_time",
+            "elapsed_time",
+            "total_elevation_gain",
+            "end_latlng",
+            "external_id"
+        ]
+    )
+
+    while True:
+        # get page of activities from Strava
+        r = requests.get(url + '?access_token=' + access_token + '&per_page=200' + '&page=' + str(page))
+        r = r.json()
+
+        # if no more results, break loop
+        if (not r):
+            break
+        # otherwise add new data to dataframe
+
+        for x in range(len(r)):
+            activities.loc[x + (page-1)*200,'id'] = r[x]['id']
+            activities.loc[x + (page-1)*200,'name'] = r[x]['name']
+            activities.loc[x + (page-1)*200,'start_date_local'] = r[x]['start_date_local']
+            activities.loc[x + (page-1)*200,'type'] = r[x]['type']
+            activities.loc[x + (page-1)*200,'distance'] = r[x]['distance']
+            activities.loc[x + (page-1)*200,'moving_time'] = r[x]['moving_time']
+            activities.loc[x + (page-1)*200,'elapsed_time'] = r[x]['elapsed_time']
+            activities.loc[x + (page-1)*200,'total_elevation_gain'] = r[x]['total_elevation_gain']
+            activities.loc[x + (page-1)*200,'end_latlng'] = r[x]['end_latlng']
+            activities.loc[x + (page-1)*200,'external_id'] = r[x]['external_id']
+        
+        # increment page
+        page += 1
+    activities.to_csv('strava_activities.csv')
+
+
+tokens = get_token()
+get_activities(tokens)
