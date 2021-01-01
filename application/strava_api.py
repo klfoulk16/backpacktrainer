@@ -76,16 +76,6 @@ def get_token():
     return strava_tokens
 
 
-    # Loop through all activities
-    #url = "https://www.strava.com/api/v3/activities"
-    #access_token = strava_tokens["access_token"]
-    # Get first page of activities from Strava with all fields
-    #r = requests.get(url + "?access_token=" + access_token)
-    #r = r.json()
-
-    #df = pd.json_normalize(r)
-    #df.to_csv("strava_activities_all_fields.csv")
-
 def get_activities(strava_tokens):
     # loop through activities
     page = 1

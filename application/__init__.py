@@ -33,4 +33,10 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
+    from application import trainer
+    app.register_blueprint(trainer.bp)
+
+    # set trainer blueprint to index (no url_prefix)
+    app.add_url_rule('/', endpoint='index')
+
     return app
