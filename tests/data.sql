@@ -1,4 +1,4 @@
-INSERT INTO activities (type, strava_activity_id)
+INSERT INTO activities (strava_activity_id, type, start_date)
 VALUES
-  ('Hike', 4526779165),
-  ('Walk', 4526779166);
+  (4526779165, "Hike", "2020-12-27T19:45:05Z"),
+  (4526779166, "Walk", "2020-10-06T22:13:31Z");

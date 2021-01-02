@@ -3,19 +3,23 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
-
 from application.internal_api import get_activities
+from application.strava_api import download_activities
 
 bp = Blueprint('trainer', __name__)
 
 
-# TODO create internal api to get all activities
-# TODO test get_activities api
 # TODO create strava_api_conn to fetch activities from strava to pop db
-# TODO probably don't want to run everytime...create test to make sure new
-# activities were fetched and db populated
+# TODO Fetch only new activities
+# TODO create tests for the previous things - tokens working, responses good,
+# getting all activities added after __ time, db insertions working properly
+# TODO implement second layer of calling strava api. get specific activities
+# and save that data to db instead of the basic data I have now
+# TODO let's put a nice refresh activities button in upper right hand corner
+# so we're not making calls every time we go to index
 @bp.route('/')
 def index():
     """Show all the activities."""
+    download_activities()
     activities = get_activities()
     return render_template('trainer/index.html', activities=activities)

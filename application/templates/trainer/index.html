@@ -9,16 +9,18 @@
     <thead>
       <tr>
         <th scope="col">#</th>
-        <th scope="col">Type</th>
         <th scope="col">Strava Activity ID</th>
+        <th scope="col">Type</th>
+        <th scope="col">Start Date (UTC)</th>
       </tr>
     </thead>
     <tbody>
     {% for activity in activities %}
       <tr>
         <th scope="row">{{ activity.id}}</th>
-        <td>{{ activity.type}}</td>
         <td>{{ activity.strava_activity_id }}</td>
+        <td>{{ activity.type}}</td>
+        <td>{{ activity.start_date }}</td>
       </tr>
     {% endfor %}
     </tbody>
