@@ -7,6 +7,7 @@ import json
 import time
 from datetime import datetime
 from application.db import get_db
+from application.internal_api import insert_activity
 
 # Get environment variables
 load_dotenv()
@@ -81,25 +82,155 @@ def get_tokens():
     return strava_tokens
 
 
-def initial_activity_download():
-    """Conducts the first download of activities from strava.
+def download_activities():
     """
+    What will this function do:
+
+    1. Download all activities until activity date of the last activity in the database (all time if db empty)
+        i. If the type is walk or hike, get detailed summary and insert values into activities table in db
+    2. Call the detailed description for each activity id in dict.
+        i. Add db row with important info for each activity id
+
+    For now:
+    1. Same.
+        i. Insert type, id, date in db
+    """
+
+    strava_tokens = get_tokens()
+
+    # get id of last activity in db
+    db = get_db()
+    last_activity_date = db.execute(
+        "SELECT MAX(start_date) FROM activities"
+    ).fetchone()[0]
+
+    page = 1
+
+    while True:
+        r = strava_list_activities_page(last_activity_date, page, strava_tokens)
+        if r.status_code != 200:
+            print("Was not able to fetch summary activity array.")
+            break
+        r = r.json()
+        if not r:
+            break
+
+        for x in range(len(r)):
+            if r[x]["type"] == "Hike" or r[x]["type"] == "Walk":
+                detailed_activity = get_detailed_activity(r[x]["id"], strava_tokens)
+                if detailed_activity.status_code == 200:
+                    insert_activity(detailed_activity.json())
+                else:
+                    print(f"Not able to fetch detailed summary for activity {x['id']}")
+
+        page += 1
+
+
+def strava_list_activities_page(last_activity_date, page, strava_tokens):
+    """Downloads specified page of strava activities.
+
+    :param last_activity_date: Start time of most recent activity in activities table. None if table is empty.
+    :type last_activity_date: DateTime str or None
+
+    :param page: Page number for activities to get.
+    :type page: int
+
+    :param strava_tokens: Active tokens for use with Strava API
+    :type: JSON Object
+
+    :return: Response object with JSON dict of activities.
+    :rtype: Response Object
+    """
+
+    url = "https://www.strava.com/api/v3/activities"
+    access_token = strava_tokens["access_token"]
+
+    if last_activity_date:
+        tstamp = int(
+            (
+                datetime.strptime(last_activity_date, "%Y-%m-%dT%H:%M:%SZ")
+                - datetime(1970, 1, 1)
+            ).total_seconds()
+        )
+
+        return requests.get(
+            url
+            + "?access_token="
+            + access_token
+            + "&after="
+            + str(tstamp)
+            + "&per_page=200"
+            + "&page="
+            + str(page)
+        )
+    else:
+        return requests.get(
+            url
+            + "?access_token="
+            + access_token
+            + "&per_page=200"
+            + "&page="
+            + str(page)
+        )
+
+
+def get_detailed_activity(activity_id, strava_tokens):
+    """Strava request for detailed summary of {activity}.
+
+    :param activity: Strava Activity id
+    :type activity: int
+
+    :param strava_tokens: Active tokens for use with Strava API
+    :type: JSON Object
+
+    :return: Reponse object with Strava DetailedActivity object
+    :rtype: Response object
+    """
+    url = "https://www.strava.com/api/v3/activities"
+    access_token = strava_tokens["access_token"]
+
+    # get response object with activity from Strava
+    return requests.get(url + "/" + str(activity_id) + "?access_token=" + access_token)
+
+
+
+
+
+
+
+
+
+
+
+# DEPRECATED
+
+
+def initial_activity_download():
+    """Conducts the first download of activities from strava."""
     strava_tokens = get_tokens()
 
     page = 1
     url = "https://www.strava.com/api/v3/activities"
-    access_token = strava_tokens['access_token']
-    
+    access_token = strava_tokens["access_token"]
+
     while True:
         # get page of activities ffrom Strava
-        r = requests.get(url + '?access_token=' + access_token + '&per_page=200' + '&page=' + str(page))
+        r = requests.get(
+            url
+            + "?access_token="
+            + access_token
+            + "&per_page=200"
+            + "&page="
+            + str(page)
+        )
+        print(f"R before r.json {r}")
         r = r.json()
-
+        print(f"R after r.json {r}")
         # if no more results, break loop
-        if (not r):
+        if not r:
             break
 
-        # otherwise add new data to db
+        """# otherwise add new data to db
         for x in range(len(r)):
             db = get_db()
             db.execute(
@@ -108,7 +239,7 @@ def initial_activity_download():
                 (r[x]['id'], r[x]['type'], r[x]['start_date'])
             )
             db.commit()
-        
+        """
         # increment page
         page += 1
 
@@ -122,12 +253,15 @@ def subsequent_activity_download(last_activity_date):
     strava_tokens = get_tokens()
 
     url = "https://www.strava.com/api/v3/activities"
-    access_token = strava_tokens['access_token']
-    # TODO make sure this date is accurate. is my computer converting the times right?
-    # it got one new activity but it didn't get a second one when I added it right afterwards.
-    tstamp = int(datetime.strptime(last_activity_date, "%Y-%m-%dT%H:%M:%SZ").timestamp())
+    access_token = strava_tokens["access_token"]
+    tstamp = int(
+        (
+            datetime.strptime(last_activity_date, "%Y-%m-%dT%H:%M:%SZ")
+            - datetime(1970, 1, 1)
+        ).total_seconds()
+    )
 
-    r = requests.get(url + '?access_token=' + access_token + '&after=' + str(tstamp))
+    r = requests.get(url + "?access_token=" + access_token + "&after=" + str(tstamp))
     r = r.json()
 
     # if no results, break
@@ -136,35 +270,8 @@ def subsequent_activity_download(last_activity_date):
         for x in range(len(r)):
             db = get_db()
             db.execute(
-                'INSERT INTO activities (strava_activity_id, type, start_date)'
-                ' VALUES (?, ?, ?)',
-                (r[x]['id'], r[x]['type'], r[x]['start_date'])
+                "INSERT INTO activities (strava_activity_id, type, start_date)"
+                " VALUES (?, ?, ?)",
+                (r[x]["id"], r[x]["type"], r[x]["start_date"]),
             )
             db.commit()
-
-
-def download_activities():
-    """
-    What will this function do:
-
-    1. Download all activities until activity date of the last activity in the database (all time if db empty)
-        i. If the type is walk or hike, store the activity id in a dict
-    2. Call the detailed description for each activity id in dict.
-        i. Add db row with important info for each activity id
-    
-    For now:
-    1. Same.
-        i. Insert type, id, date in db
-    """
-
-    # get id of last activity in db
-    db = get_db()
-    last_activity_date = db.execute(
-        'SELECT MAX(start_date) FROM activities'
-    ).fetchone()[0]
-
-    if last_activity_date is None:
-        # get all activities
-        initial_activity_download()
-    else:
-        subsequent_activity_download(last_activity_date)
