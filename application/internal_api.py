@@ -15,6 +15,10 @@ def get_activities():
     ).fetchall()
     return activities
 
+
+# TODO insert parts of the activity that we actually want
+# TODO parse activity description to get parts we actually want
+# TODO create test
 def insert_activity(activity):
     db = get_db()
     db.execute(
