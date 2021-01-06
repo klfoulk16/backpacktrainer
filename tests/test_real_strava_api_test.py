@@ -83,7 +83,7 @@ def test_strava_list_activities_page():
     assert r.status_code != 200
 
 
-@pytest.mark.skip
+#@pytest.mark.skip
 def test_get_detailed_activity():
     """Assert all types are as strava says."""
     tokens = get_tokens()
@@ -103,9 +103,19 @@ def test_get_detailed_activity():
     assert type(activity["average_speed"]) == float
     assert type(activity["gear_id"]) == str
     assert type(activity["description"]) is type(None)
-    activity = get_detailed_activity(4493185988, tokens)
+    activity = get_detailed_activity(4576599261, tokens)
     assert activity.status_code == 200
     activity = activity.json()
-    # this activity has a description
-    assert type(activity["description"]) == str 
+    # this activity has a description but I added it manually so there's no elev high or low
+    assert type(activity["description"]) == str
+
+    assert type(activity["id"]) == int
+    assert type(activity["distance"]) == float
+    assert type(activity["moving_time"]) == int
+    assert type(activity["elapsed_time"]) == int
+    assert type(activity["total_elevation_gain"]) == float
+    assert type(activity["type"]) == str
+    assert type(activity["start_date"]) == str
+    assert type(activity["average_speed"]) == float
+    assert type(activity["gear_id"]) == str
 

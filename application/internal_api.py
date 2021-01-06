@@ -2,6 +2,7 @@
 
 from application.db import get_db
 import re
+import datetime
 
 
 def get_all_activities():
@@ -25,9 +26,19 @@ def get_specific_activity(id):
     return activity
 
 
-def prepare_activities_for_display():
+def prepare_activities_for_display(activities):
     """Takes dict of activities stored in db and formats their values so they're easier to read."""
-    
+    finished_activities = []
+    for activity in activities:
+        activity = dict(activity)
+        # format speeds/times in seconds
+        activity["moving_time"] = str(datetime.timedelta(seconds = activity["moving_time"]))
+        activity["elapsed_time"] = str(datetime.timedelta(seconds = activity["elapsed_time"]))
+        activity["average_speed"] = str(datetime.timedelta(seconds = activity["average_speed"]))
+        date = datetime.datetime.strptime(activity["start_date"], "%Y-%m-%dT%H:%M:%SZ")
+        activity["start_date"] = date.strftime("%b %d %Y")
+        finished_activities.append(activity)
+    return finished_activities
 
 def insert_activity(activity):
     """Inserts a prepared Activity dict into the activities table."""
@@ -42,18 +53,24 @@ def insert_activity(activity):
 
 def prepare_detailedactivity_object(activity):
     """Prepares a Strava DetailedActivity Object for insertion into the activities table."""
+    activity["average_speed"] = convert_speed(activity["average_speed"])
     activity["distance"] = meters_to_miles(activity["distance"])
     activity["total_elevation_gain"] = meters_to_feet(activity["total_elevation_gain"])
-    activity["elev_high"] = meters_to_feet(activity["elev_high"])
-    activity["elev_low"] = meters_to_feet(activity["elev_low"])
-    activity["average_speed"] = convert_speed(activity["average_speed"])
+    try:
+        activity["elev_low"] = meters_to_feet(activity["elev_low"])
+        activity["elev_high"] = meters_to_feet(activity["elev_high"])
+    except Exception as e:
+        # this must be a manually added activity
+        activity["elev_low"] = 0
+        activity["elev_high"] = 0
     activity = parse_description(activity)
     return activity
+
 
 def convert_speed(speed):
     """Convert speed from meters per second to seconds per mile."""
     if speed and speed > 0:
-        return round(1609.34/speed, 2)
+        return round(1609.34/speed)
     else:
         return 0
 

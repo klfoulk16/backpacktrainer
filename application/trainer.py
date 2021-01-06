@@ -3,7 +3,7 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
-from application.internal_api import get_all_activities
+from application.internal_api import get_all_activities, prepare_activities_for_display
 from application.strava_api import download_activities
 
 bp = Blueprint('trainer', __name__)
@@ -16,7 +16,7 @@ bp = Blueprint('trainer', __name__)
 @bp.route('/')
 def index():
     """Show all the activities."""
-    #download_activities()
+    download_activities()
     activities = get_all_activities()
-    activities = prepare_activities_for_display()
+    activities = prepare_activities_for_display(activities)
     return render_template('trainer/index.html', activities=activities)

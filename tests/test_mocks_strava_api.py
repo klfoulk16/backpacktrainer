@@ -19,15 +19,11 @@ def test_token_test(mocker):
 # https://medium.com/@durgaswaroop/writing-better-tests-in-python-with-pytest-mock-part-2-92b828e1453c
 # https://changhsinlee.com/pytest-mock/
 
-@pytest.mark.skip
+#@pytest.mark.skip
 def test_strava_api_call(mocker):
     # not functional
-    mocker.patch(
-        "application.strava_api.strava_list_activities_page",
-        MagicMock(status_code=200,response=json.dumps({'key':'value'}))
-    )
+    mocker.patch("application.strava_api.requests.get", return_value="hi")
     tokens = {"access_token": "e763t8a194f9e3e2026288778696e54c863c2828"}
     r = strava_list_activities_page("2018-05-02T12:15:09Z", 1, tokens)
-    assert r == 200
-    assert r.json() == {'key':'value'}
+    assert r == "hi"
 
