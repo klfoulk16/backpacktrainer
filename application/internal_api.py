@@ -12,7 +12,7 @@ def get_all_activities():
     """
     db = get_db()
     activities = db.execute(
-        'SELECT * FROM activities'
+        'SELECT * FROM activities ORDER BY start_date DESC'
     ).fetchall()
     return activities
 
@@ -25,6 +25,10 @@ def get_specific_activity(id):
     return activity
 
 
+def prepare_activities_for_display():
+    """Takes dict of activities stored in db and formats their values so they're easier to read."""
+    
+
 def insert_activity(activity):
     """Inserts a prepared Activity dict into the activities table."""
     db = get_db()
@@ -36,7 +40,7 @@ def insert_activity(activity):
     db.commit()
 
 
-def prepare_activity(activity):
+def prepare_detailedactivity_object(activity):
     """Prepares a Strava DetailedActivity Object for insertion into the activities table."""
     activity["distance"] = meters_to_miles(activity["distance"])
     activity["total_elevation_gain"] = meters_to_feet(activity["total_elevation_gain"])
@@ -82,7 +86,7 @@ def parse_description(activity):
     else:
         comments = activity["description"]
 
-        weight_format = re.compile(r"\d+[\.]?\d*\s?(lbs|pounds|lb)")
+        weight_format = re.compile(r"\d+[\.]?\d*\s?(lbs|pounds|lb)\s?(pack|bag)?")
         weight = weight_format.search(activity["description"])
         if weight:
             weight = weight.group()

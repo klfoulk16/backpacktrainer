@@ -7,7 +7,7 @@ import json
 import time
 from datetime import datetime
 from application.db import get_db
-from application.internal_api import insert_activity, prepare_activity
+from application.internal_api import insert_activity, prepare_detailedactivity_object
 
 # Get environment variables
 load_dotenv()
@@ -122,7 +122,7 @@ def download_activities():
             if r[x]["type"] == "Hike" or r[x]["type"] == "Walk":
                 detailed_activity = get_detailed_activity(r[x]["id"], strava_tokens)
                 if detailed_activity.status_code == 200:
-                    activity = prepare_activity(detailed_activity.json())
+                    activity = prepare_detailedactivity_object(detailed_activity.json())
                     insert_activity(activity)
                 else:
                     print(f"Not able to fetch detailed summary for activity {x['id']}")

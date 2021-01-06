@@ -8,18 +8,33 @@
   <table class="table">
     <thead>
       <tr>
-        <th scope="col">Strava Activity ID</th>
-        <th scope="col">Type</th>
-        <th scope="col">Type</th>
         <th scope="col">Date</th>
+        <th scope="col">Distance</th>
+        <th scope="col">Moving Time</th>
+        <th scope="col">Elapsed Time</th>
+        <th scope="col">Total Elevation Gain</th>
+        <th scope="col">Average Speed</th>
+        <th scope="col">Gear</th>
+        <th scope="col">Weight</th>
+        <th scope="col">Knee Pain</th>
+        <th scope="col">Ground</th>
+        <th scope="col">Comments</th>
       </tr>
     </thead>
     <tbody>
     {% for activity in activities %}
       <tr>
-        <th scope="row">{{ activity.id}}</th>
-        <td>{{ activity.type}}</td>
-        <td>{{ activity.start_date }}</td>
+        <th scope="row">{{ activity.start_date}}</th>
+        <td>{{ activity.distance }}</td>
+        <td>{{ activity.moving_time }}</td>
+        <td>{{ activity.elapsed_time }}</td>
+        <td>{{ activity.total_elevation_gain }}</td>
+        <td>{{ activity.average_speed }}</td>
+        <td>{{ activity.gear_id }}</td>
+        <td>{{ activity.weight }}</td>
+        <td>{{ activity.knee_pain }}</td>
+        <td>{{ activity.ground_type }}</td>
+        <td>{{ activity.comments }}</td>
       </tr>
     {% endfor %}
     </tbody>

@@ -1,8 +1,9 @@
 """Test our internal api calls."""
 
 import pytest
-from application.internal_api import get_all_activities, insert_activity, parse_description, get_specific_activity, prepare_activity, meters_to_feet, convert_speed, meters_to_miles
+from application.internal_api import prepare_activities_for_display, get_all_activities, insert_activity, parse_description, get_specific_activity, prepare_detailedactivity_object, meters_to_feet, convert_speed, meters_to_miles
 from tests.conftest import ActivitySamples
+import re
 from copy import deepcopy
 
 
@@ -26,10 +27,26 @@ def test_get_specific_activity(app):
         # verify other aspects of what activity 1 should have
 
 
+def test_prepare_activities_for_display()
+    """Assert that all activity values are converted to formats easy for reader to understand"""
+    activities = prepare_activities_for_display(get_all_activities)
+    for activity in activities:
+        # this isn't perfect because it still matches things like "1:1:12"
+        time_format = re.compile(r"^([1-9]?[0-9]:)?([0-9]?[0-9]:)?[0-9][0-9]$")
+        # assert speed is changed from seconds per mile to min:sec per mile
+        assert time_format.match(activity["average_speed"]) is not None
+        assert time_format.match(activity["moving_time"]) is not None
+        assert time_format.match(activity["elapsed_time"]) is not None
+        # assert Dates are just the day not the time
+        date_format = re.compile(r"^(0|1)[0-9]-[0-3][0-9]-[1-9][0-9]{3}")
+        assert date_format.match(activity["start_date"]) is not None
+        # assert Gear is the name of the gear
+        # honestly we could name it anything so can't really check this...
+
 def test_insert_activity(app):
     """Ensure activity is properly added to activities table."""
     with app.app_context():
-        activity = prepare_activity(deepcopy(ActivitySamples.activity1))
+        activity = prepare_detailedactivity_object(deepcopy(ActivitySamples.activity1))
         assert activity["type"] in ["Hike", "Walk"]
         # make sure this activity isn't in database already
         assert get_specific_activity(activity["id"]) is None
@@ -54,11 +71,11 @@ def test_insert_activity(app):
         assert inserted_activity["comments"] == activity["comments"]
 
 
-def test_prepare_activity():
+def test_prepare_detailedactivity_object():
     """Assert that activity is properly prepared for db insertion."""
     activity = deepcopy(ActivitySamples.activity1)
     assert activity["distance"] != meters_to_miles(ActivitySamples.activity1["distance"])
-    activity = prepare_activity(activity)
+    activity = prepare_detailedactivity_object(activity)
     assert activity["distance"] == meters_to_miles(ActivitySamples.activity1["distance"])
     assert activity["total_elevation_gain"] == meters_to_feet(ActivitySamples.activity1["total_elevation_gain"])
     assert activity["elev_high"] == meters_to_feet(ActivitySamples.activity1["elev_high"])

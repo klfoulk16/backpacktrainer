@@ -16,6 +16,7 @@ bp = Blueprint('trainer', __name__)
 @bp.route('/')
 def index():
     """Show all the activities."""
-    download_activities()
+    #download_activities()
     activities = get_all_activities()
+    activities = prepare_activities_for_display()
     return render_template('trainer/index.html', activities=activities)
