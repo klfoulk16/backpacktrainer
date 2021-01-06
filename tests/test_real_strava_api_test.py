@@ -3,7 +3,8 @@
 import pytest
 import time
 from datetime import datetime
-from application.strava_api import get_tokens, strava_list_activities_page
+import json
+from application.strava_api import get_tokens, strava_list_activities_page, get_detailed_activity
 
 # TODO test that initial authentication approval works (and set it up)
 # TODO test to make sure get activities returns what's expected
@@ -80,3 +81,31 @@ def test_strava_list_activities_page():
     # try to get activities from future is error
     r = strava_list_activities_page("2025-12-22T19:41:05Z", 1)
     assert r.status_code != 200
+
+
+@pytest.mark.skip
+def test_get_detailed_activity():
+    """Assert all types are as strava says."""
+    tokens = get_tokens()
+    activity = get_detailed_activity(4563031911, tokens)
+    # this activity does not have a description
+    assert activity.status_code == 200
+    activity = activity.json()
+    assert type(activity["id"]) == int
+    assert type(activity["distance"]) == float
+    assert type(activity["moving_time"]) == int
+    assert type(activity["elapsed_time"]) == int
+    assert type(activity["total_elevation_gain"]) == float
+    assert type(activity["elev_high"]) == float
+    assert type(activity["elev_low"]) == float
+    assert type(activity["type"]) == str
+    assert type(activity["start_date"]) == str
+    assert type(activity["average_speed"]) == float
+    assert type(activity["gear_id"]) == str
+    assert type(activity["description"]) is type(None)
+    activity = get_detailed_activity(4493185988, tokens)
+    assert activity.status_code == 200
+    activity = activity.json()
+    # this activity has a description
+    assert type(activity["description"]) == str 
+

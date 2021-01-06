@@ -12,13 +12,8 @@ Problem/Solution:
 
 # Create function that tests that strava_api.get_token() returns an active non-expired token
 
-# Create function that creates dataframe with important data from data download.
-    # test
-
-# pull data for each activity...see how info differs. Store valuable stuff in dataframe.
-    #test
-
-# Parse description into important parts and seperate into new df columns.
+# go through activities in strava and see how many comments mention shoes. 
+# Potentially parse that out if no shoe was specifically specified
 
 # create data visualizations using the data
     # weight vs distance
@@ -36,8 +31,6 @@ Problem/Solution:
 
 #Part 2:
 
-# create sqlite database to store this dataframe in
-
-# create function that checks to see if a new activity was added (and for new activities instead of all)
+# create background celery worker that checks to see if a new activity was added (and for new activities instead of all)
     # then add new activity to db
     

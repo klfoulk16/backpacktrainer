@@ -7,11 +7,15 @@ import json
 import time
 from datetime import datetime
 from application.db import get_db
-from application.internal_api import insert_activity
+from application.internal_api import insert_activity, prepare_activity
 
 # Get environment variables
 load_dotenv()
 
+
+def token_test():
+    # learning how to use pytest mocker
+    return get_tokens()
 
 def get_initial_token(code):
     """Creates strava_tokens.json with initial authorization token.
@@ -95,7 +99,6 @@ def download_activities():
     1. Same.
         i. Insert type, id, date in db
     """
-
     strava_tokens = get_tokens()
 
     # get id of last activity in db
@@ -119,7 +122,8 @@ def download_activities():
             if r[x]["type"] == "Hike" or r[x]["type"] == "Walk":
                 detailed_activity = get_detailed_activity(r[x]["id"], strava_tokens)
                 if detailed_activity.status_code == 200:
-                    insert_activity(detailed_activity.json())
+                    activity = prepare_activity(detailed_activity.json())
+                    insert_activity(activity)
                 else:
                     print(f"Not able to fetch detailed summary for activity {x['id']}")
 
@@ -172,6 +176,14 @@ def strava_list_activities_page(last_activity_date, page, strava_tokens):
             + "&page="
             + str(page)
         )
+
+
+def see_what___returns():
+    strava_tokens = get_tokens()
+    last_activity_date = "2021-01-03T21:32:51Z"
+    page = 1
+    stuff = strava_list_activities_page(last_activity_date, page, strava_tokens)
+    print(stuff.json())
 
 
 def get_detailed_activity(activity_id, strava_tokens):
