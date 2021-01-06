@@ -37,9 +37,9 @@ def client(app):
 def runner(app):
     return app.test_cli_runner()
 
-
-class ActivitySamples:
-    activity1 = {
+@pytest.fixture
+def Activity1():
+    return {
         "id" : 12345678987654321,
         "resource_state" : 3,
         "external_id" : "garmin_push_12345678987654321",
@@ -213,8 +213,11 @@ class ActivitySamples:
         "segment_leaderboard_opt_out" : False,
         "leaderboard_opt_out" : False
         }
+
+@pytest.fixture
+def Activity2():
     # description missing weight and knee pain
-    activity2 = {
+    return {
         "id" : 12345678987654322,
         "resource_state" : 3,
         "external_id" : "garmin_push_12345678987654321",
@@ -388,8 +391,11 @@ class ActivitySamples:
         "segment_leaderboard_opt_out" : False,
         "leaderboard_opt_out" : False
         }
+
+@pytest.fixture
+def Activity3():
     # description intentionally None
-    activity3 = {
+    return {
         "id" : 12345678987654322,
         "resource_state" : 3,
         "external_id" : "garmin_push_12345678987654321",

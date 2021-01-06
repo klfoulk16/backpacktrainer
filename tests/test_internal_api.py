@@ -2,7 +2,6 @@
 
 import pytest
 from application.internal_api import prepare_activities_for_display, get_all_activities, insert_activity, parse_description, get_specific_activity, prepare_detailedactivity_object, meters_to_feet, convert_speed, meters_to_miles
-from tests.conftest import ActivitySamples
 import re
 from copy import deepcopy
 
@@ -27,26 +26,30 @@ def test_get_specific_activity(app):
         # verify other aspects of what activity 1 should have
 
 
-def test_prepare_activities_for_display()
+def test_prepare_activities_for_display(app):
     """Assert that all activity values are converted to formats easy for reader to understand"""
-    activities = prepare_activities_for_display(get_all_activities)
-    for activity in activities:
-        # this isn't perfect because it still matches things like "1:1:12"
-        time_format = re.compile(r"^([1-9]?[0-9]:)?([0-9]?[0-9]:)?[0-9][0-9]$")
-        # assert speed is changed from seconds per mile to min:sec per mile
-        assert time_format.match(activity["average_speed"]) is not None
-        assert time_format.match(activity["moving_time"]) is not None
-        assert time_format.match(activity["elapsed_time"]) is not None
-        # assert Dates are just the day not the time
-        date_format = re.compile(r"^(0|1)[0-9]-[0-3][0-9]-[1-9][0-9]{3}")
-        assert date_format.match(activity["start_date"]) is not None
-        # assert Gear is the name of the gear
-        # honestly we could name it anything so can't really check this...
+    with app.app_context():
+        a = get_all_activities()
+        activities = prepare_activities_for_display(a)
+        for activity in activities:
+            activity = dict(activity)
+            assert type(activity) == dict
+            # this isn't perfect because it still matches things like "1:1:12"
+            time_format = re.compile(r"^([1-9]?[0-9]:)?([0-9]?[0-9]:)?[0-9][0-9]$")
+            # assert speed is changed from seconds per mile to min:sec per mile
+            assert time_format.match(activity["average_speed"]) is not None
+            assert time_format.match(activity["moving_time"]) is not None
+            assert time_format.match(activity["elapsed_time"]) is not None
+            # assert Dates are just the day not the time
+            date_format = re.compile(r"^[A-Z][a-z]{2}\s[0-9]{2}\s[0-9]{4}")
+            assert date_format.match(activity["start_date"]) is not None
+            # assert Gear is the name of the gear
+            # honestly we could name it anything so can't really check this...
 
-def test_insert_activity(app):
+def test_insert_activity(app, Activity1):
     """Ensure activity is properly added to activities table."""
     with app.app_context():
-        activity = prepare_detailedactivity_object(deepcopy(ActivitySamples.activity1))
+        activity = prepare_detailedactivity_object(Activity1)
         assert activity["type"] in ["Hike", "Walk"]
         # make sure this activity isn't in database already
         assert get_specific_activity(activity["id"]) is None
@@ -71,41 +74,41 @@ def test_insert_activity(app):
         assert inserted_activity["comments"] == activity["comments"]
 
 
-def test_prepare_detailedactivity_object():
+def test_prepare_detailedactivity_object(Activity1):
     """Assert that activity is properly prepared for db insertion."""
-    activity = deepcopy(ActivitySamples.activity1)
-    assert activity["distance"] != meters_to_miles(ActivitySamples.activity1["distance"])
+    activity = deepcopy(Activity1)
+    assert activity["distance"] != meters_to_miles(Activity1["distance"])
     activity = prepare_detailedactivity_object(activity)
-    assert activity["distance"] == meters_to_miles(ActivitySamples.activity1["distance"])
-    assert activity["total_elevation_gain"] == meters_to_feet(ActivitySamples.activity1["total_elevation_gain"])
-    assert activity["elev_high"] == meters_to_feet(ActivitySamples.activity1["elev_high"])
-    assert activity["elev_low"] == meters_to_feet(ActivitySamples.activity1["elev_low"])
-    assert activity["average_speed"] == convert_speed(ActivitySamples.activity1["average_speed"])
+    assert activity["distance"] == meters_to_miles(Activity1["distance"])
+    assert activity["total_elevation_gain"] == meters_to_feet(Activity1["total_elevation_gain"])
+    assert activity["elev_high"] == meters_to_feet(Activity1["elev_high"])
+    assert activity["elev_low"] == meters_to_feet(Activity1["elev_low"])
+    assert activity["average_speed"] == convert_speed(Activity1["average_speed"])
     assert activity["weight"] == 10
     assert activity["knee_pain"] == 3
     assert activity["ground_type"] == "trail"
     assert activity["comments"] == "Walked with Jack"
 
 
-def test_meters_to_feet():
-    activity = deepcopy(ActivitySamples.activity1)
+def test_meters_to_feet(Activity1):
+    activity = Activity1
     activity["total_elevation_gain"] = meters_to_feet(activity["total_elevation_gain"])
     assert activity["total_elevation_gain"] == 1693.00
 
 
-def test_parse_description():
+def test_parse_description(Activity1, Activity2, Activity3):
     """Assert that function takes an activity, breaks the description down and adds parts to activity dict."""
-    activity = parse_description(deepcopy(ActivitySamples.activity1))
+    activity = parse_description(Activity1)
     assert activity["weight"] == 10
     assert activity["knee_pain"] == 3
     assert activity["ground_type"] == "trail"
     assert activity["comments"] == "Walked with Jack"
-    activity = parse_description(deepcopy(ActivitySamples.activity2))
+    activity = parse_description(deepcopy(Activity2))
     assert activity["weight"] == 0
     assert activity["knee_pain"] == 0
     assert activity["ground_type"] == "snow"
     assert activity["comments"] == "Walked with Jack in Snow"
-    activity = parse_description(deepcopy(ActivitySamples.activity3))
+    activity = parse_description(deepcopy(Activity3))
     assert activity["weight"] == 0
     assert activity["knee_pain"] == 0
     assert activity["ground_type"] == "trail"
