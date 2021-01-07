@@ -19,6 +19,7 @@ def get_all_activities():
 
 
 def get_specific_activity(id):
+    """Returns the activity with {id} from activities table in database"""
     db = get_db()
     activity = db.execute(
         'SELECT * FROM activities WHERE id=?', (id,)
@@ -26,19 +27,66 @@ def get_specific_activity(id):
     return activity
 
 
-def prepare_activities_for_display(activities):
-    """Takes dict of activities stored in db and formats their values so they're easier to read."""
-    finished_activities = []
+def activity_index():
+    """Fetches all activities from the activities table and prepares them for easy reading."""
+    activities = get_all_activities()
+    formated_activities = []
     for activity in activities:
-        activity = dict(activity)
-        # format speeds/times in seconds
-        activity["moving_time"] = str(datetime.timedelta(seconds = activity["moving_time"]))
-        activity["elapsed_time"] = str(datetime.timedelta(seconds = activity["elapsed_time"]))
-        activity["average_speed"] = str(datetime.timedelta(seconds = activity["average_speed"]))
-        date = datetime.datetime.strptime(activity["start_date"], "%Y-%m-%dT%H:%M:%SZ")
-        activity["start_date"] = date.strftime("%b %d %Y")
-        finished_activities.append(activity)
-    return finished_activities
+        formated_activities.append(format_activity_for_view(activity))
+    return formated_activities
+
+
+def format_activity_for_view(activity):
+    """Takes an activity sqllite thing?? and formats all values for easy human interpretation"""
+    # format speeds/times in seconds
+    formated_activity = dict(activity)
+    formated_activity["moving_time"] = convert_seconds_h_m_s(activity["moving_time"])
+    formated_activity["elapsed_time"] = convert_seconds_h_m_s(activity["elapsed_time"])
+    formated_activity["start_date"] = convert_date(activity["start_date"])
+    formated_activity["average_speed"] = convert_average_speed(activity["average_speed"])
+    formated_activity["distance"] = convert_meters_miles(activity["distance"])
+    formated_activity["total_elevation_gain"] = convert_meters_feet(activity["total_elevation_gain"])
+    formated_activity["elev_low"] = convert_meters_feet(activity["elev_low"])
+    formated_activity["elev_high"] = convert_meters_feet(activity["elev_high"])
+    return formated_activity
+
+
+def convert_average_speed(speed):
+    """Converts average speed from meters per second to hours:minutes:seconds per mile."""
+    # def convert_speed(speed):
+    if speed and speed > 0:
+        speed = round(1609.34/speed)
+    else:
+        speed = 0
+    return convert_seconds_h_m_s(speed)
+
+
+def convert_seconds_h_m_s(time):
+    """Converts time from seconds into H:M:S string."""
+    return str(datetime.timedelta(seconds=time))
+
+
+def convert_meters_miles(distance):
+    """Converts meters to miles i.e. for activity["distance"]"""
+    if distance:
+        return round(distance/1609.34, 2)
+    else:
+        return 0
+
+
+def convert_meters_feet(distance):
+    """Converts meters to feet i.e. for activity elevations"""
+    if distance:
+        return round(distance*3.281, 2)
+    else:
+        return 0
+
+
+def convert_date(date):
+    """Converts date to format Jan 01 2021"""
+    date = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+    return date.strftime("%b %d %Y")
+
 
 def insert_activity(activity):
     """Inserts a prepared Activity dict into the activities table."""
@@ -51,46 +99,6 @@ def insert_activity(activity):
     db.commit()
 
 
-def prepare_detailedactivity_object(activity):
-    """Prepares a Strava DetailedActivity Object for insertion into the activities table."""
-    activity["average_speed"] = convert_speed(activity["average_speed"])
-    activity["distance"] = meters_to_miles(activity["distance"])
-    activity["total_elevation_gain"] = meters_to_feet(activity["total_elevation_gain"])
-    try:
-        activity["elev_low"] = meters_to_feet(activity["elev_low"])
-        activity["elev_high"] = meters_to_feet(activity["elev_high"])
-    except Exception as e:
-        # this must be a manually added activity
-        activity["elev_low"] = 0
-        activity["elev_high"] = 0
-    activity = parse_description(activity)
-    return activity
-
-
-def convert_speed(speed):
-    """Convert speed from meters per second to seconds per mile."""
-    if speed and speed > 0:
-        return round(1609.34/speed)
-    else:
-        return 0
-
-
-def meters_to_miles(distance):
-    """Converts meters to miles"""
-    if distance:
-        return round(distance/1609.34, 2)
-    else:
-        return 0
-
-
-def meters_to_feet(distance):
-    """Converts meters to feet"""
-    if distance:
-        return round(distance*3.281, 2)
-    else:
-        return 0
-
-
 def parse_description(activity):
     """Takes an detailed activity object and parses the description key to pull out the various bits of information I need."""
     # parse ground type, lbs, knee pain, other comments
@@ -99,7 +107,6 @@ def parse_description(activity):
         activity["knee_pain"] = 0
         activity['ground_type'] = "trail"
         activity['comments'] = None
-        return activity
     else:
         comments = activity["description"]
 
@@ -134,4 +141,11 @@ def parse_description(activity):
             activity['comments'] = comments.group()
         else:
             activity['comments'] = None
-        return activity
+
+
+def handle_manual_activity_errors(activity):
+    """Handles errors thrown when an activity is missing key:value pairs."""
+    if "elev_high" not in activity:
+        activity["elev_high"] = 0
+    if "elev_low" not in activity:
+        activity["elev_low"] = 0

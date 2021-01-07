@@ -7,7 +7,7 @@ import json
 import time
 from datetime import datetime
 from application.db import get_db
-from application.internal_api import insert_activity, prepare_detailedactivity_object
+from application.internal_api import insert_activity, parse_description, handle_manual_activity_errors
 
 # Get environment variables
 load_dotenv()
@@ -16,6 +16,7 @@ load_dotenv()
 def token_test():
     # learning how to use pytest mocker
     return get_tokens()
+
 
 def get_initial_token(code):
     """Creates strava_tokens.json with initial authorization token.
@@ -86,19 +87,8 @@ def get_tokens():
     return strava_tokens
 
 
-def download_activities():
-    """
-    What will this function do:
-
-    1. Download all activities until activity date of the last activity in the database (all time if db empty)
-        i. If the type is walk or hike, get detailed summary and insert values into activities table in db
-    2. Call the detailed description for each activity id in dict.
-        i. Add db row with important info for each activity id
-
-    For now:
-    1. Same.
-        i. Insert type, id, date in db
-    """
+def download_new_activities():
+    """Downloads all new activities from strava (activities added after most recent activity in DB)."""
     strava_tokens = get_tokens()
 
     # get id of last activity in db
@@ -122,10 +112,12 @@ def download_activities():
             if r[x]["type"] == "Hike" or r[x]["type"] == "Walk":
                 detailed_activity = get_detailed_activity(r[x]["id"], strava_tokens)
                 if detailed_activity.status_code == 200:
-                    activity = prepare_detailedactivity_object(detailed_activity.json())
+                    activity = detailed_activity.json()
+                    parse_description(activity)
+                    handle_manual_activity_errors(activity)
                     insert_activity(activity)
                 else:
-                    print(f"Not able to fetch detailed summary for activity {x['id']}")
+                    print(f"Not able to fetch detailed summary for activity {r[x]['id']}")
 
         page += 1
 
