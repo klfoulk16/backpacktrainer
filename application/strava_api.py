@@ -13,11 +13,6 @@ from application.internal_api import insert_activity, parse_description, handle_
 load_dotenv()
 
 
-def token_test():
-    # learning how to use pytest mocker
-    return get_tokens()
-
-
 def get_initial_token(code):
     """Creates strava_tokens.json with initial authorization token.
 
@@ -68,15 +63,9 @@ def get_tokens():
     # use the refresh_token to get the new access_token
     if strava_tokens["expires_at"] < time.time():
         # Make Strava auth API call with current refresh token
-        response = requests.post(
-            url="https://www.strava.com/oauth/token",
-            data={
-                "client_id": os.getenv("CLIENT_ID"),
-                "client_secret": os.getenv("CLIENT_SECRET"),
-                "grant_type": "refresh_token",
-                "refresh_token": strava_tokens["refresh_token"],
-            },
-        )
+        response = refresh_tokens(strava_tokens)
+        print(response)
+        print(response.status_code)
         # Save response as json in new variable
         new_strava_tokens = response.json()
         # Save new tokens to file
@@ -87,42 +76,39 @@ def get_tokens():
     return strava_tokens
 
 
-def download_new_activities():
-    """Downloads all new activities from strava (activities added after most recent activity in DB)."""
-    strava_tokens = get_tokens()
-
-    # get id of last activity in db
-    db = get_db()
-    last_activity_date = db.execute(
-        "SELECT MAX(start_date) FROM activities"
-    ).fetchone()[0]
-
-    page = 1
-
-    while True:
-        r = strava_list_activities_page(last_activity_date, page, strava_tokens)
-        if r.status_code != 200:
-            print("Was not able to fetch summary activity array.")
-            break
-        r = r.json()
-        if not r:
-            break
-
-        for x in range(len(r)):
-            if r[x]["type"] == "Hike" or r[x]["type"] == "Walk":
-                detailed_activity = get_detailed_activity(r[x]["id"], strava_tokens)
-                if detailed_activity.status_code == 200:
-                    activity = detailed_activity.json()
-                    parse_description(activity)
-                    handle_manual_activity_errors(activity)
-                    insert_activity(activity)
-                else:
-                    print(f"Not able to fetch detailed summary for activity {r[x]['id']}")
-
-        page += 1
+def refresh_tokens(strava_tokens):
+    """Uses strava refresh token to get a new set of tokens."""
+    return requests.post(
+        url="https://www.strava.com/oauth/token",
+        data={
+            "client_id": os.getenv("CLIENT_ID"),
+            "client_secret": os.getenv("CLIENT_SECRET"),
+            "grant_type": "refresh_token",
+            "refresh_token": strava_tokens["refresh_token"],
+            },
+        )
 
 
-def strava_list_activities_page(last_activity_date, page, strava_tokens):
+def get_detailed_activity(activity_id, strava_tokens):
+    """Strava request for detailed summary of {activity}.
+
+    :param activity: Strava Activity id
+    :type activity: int
+
+    :param strava_tokens: Active tokens for use with Strava API
+    :type: JSON Object
+
+    :return: Reponse object with Strava DetailedActivity object
+    :rtype: Response object
+    """
+    url = "https://www.strava.com/api/v3/activities"
+    access_token = strava_tokens["access_token"]
+
+    # get response object with activity from Strava
+    return requests.get(url + "/" + str(activity_id) + "?access_token=" + access_token)
+
+
+def get_page_of_activities(last_activity_date, page, strava_tokens):
     """Downloads specified page of strava activities.
 
     :param last_activity_date: Start time of most recent activity in activities table. None if table is empty.
@@ -170,28 +156,41 @@ def strava_list_activities_page(last_activity_date, page, strava_tokens):
         )
 
 
-def see_what___returns():
+def download_new_activities():
+    """Downloads all new activities from strava (activities added after most recent activity in DB)."""
     strava_tokens = get_tokens()
-    last_activity_date = "2021-01-03T21:32:51Z"
+
+    # get id of last activity in db
+    db = get_db()
+    last_activity_date = db.execute(
+        "SELECT MAX(start_date) FROM activities"
+    ).fetchone()[0]
+
     page = 1
-    stuff = strava_list_activities_page(last_activity_date, page, strava_tokens)
-    print(stuff.json())
 
+    while True:
+        r = get_page_of_activities(last_activity_date, page, strava_tokens)
+        if r.status_code != 200:
+            print("Was not able to fetch summary activity array.")
+            break
+        print("r: ", r)
+        r = r.json()
+        print("r.json:", r)
+        print("page: ", page)
+        if not r:
+            break
+        print("length: ", len(r), "\n")
+        for x in range(len(r)):
+            print("im here")
+            if r[x]["type"] == "Hike" or r[x]["type"] == "Walk":
+                detailed_activity = get_detailed_activity(r[x]["id"], strava_tokens)
+                if detailed_activity.status_code == 200:
+                    activity = detailed_activity.json()
+                    parse_description(activity)
+                    handle_manual_activity_errors(activity)
+                    insert_activity(activity)
+                    print("activity inserted")
+                else:
+                    print(f"Not able to fetch detailed summary for activity {r[x]['id']}")
 
-def get_detailed_activity(activity_id, strava_tokens):
-    """Strava request for detailed summary of {activity}.
-
-    :param activity: Strava Activity id
-    :type activity: int
-
-    :param strava_tokens: Active tokens for use with Strava API
-    :type: JSON Object
-
-    :return: Reponse object with Strava DetailedActivity object
-    :rtype: Response object
-    """
-    url = "https://www.strava.com/api/v3/activities"
-    access_token = strava_tokens["access_token"]
-
-    # get response object with activity from Strava
-    return requests.get(url + "/" + str(activity_id) + "?access_token=" + access_token)
+        page += 1
