@@ -4,7 +4,7 @@ import pytest
 import time
 from datetime import datetime
 import json
-from application.strava_api import get_tokens, strava_list_activities_page, get_detailed_activity
+from application.strava_api import get_tokens, get_page_of_activities, get_detailed_activity
 
 # TODO test that initial authentication approval works (and set it up)
 # TODO test to make sure get activities returns what's expected
@@ -36,17 +36,17 @@ def test_get_tokens():
 
 # TODO active tokens need to be passed in as parameter
 @pytest.mark.skip
-def test_strava_list_activities_page():
+def test_get_page_of_activities():
     """Test that strava api call returns a 200 reponse and JSON dict of
     activities in expected format."""
     
     # get activities on page that won't have activities
-    r = strava_list_activities_page(None, 50)
+    r = get_page_of_activities(None, 50)
     assert r.status_code == 200
     assert r.json() is None
 
     # get values only after certain time
-    r = strava_list_activities_page("2020-12-27T19:45:05Z", 1)
+    r = get_page_of_activities("2020-12-27T19:45:05Z", 1)
     assert r.status_code == 200
     # check that all necessary objects are included
     r_json = r.json()
@@ -59,7 +59,7 @@ def test_strava_list_activities_page():
         assert datetime.strptime(x["start_date"], "%Y-%m-%dT%H:%M:%SZ") < datetime.strptime("2020-12-27T19:45:05Z", "%Y-%m-%dT%H:%M:%SZ")
     
     # check that returns all activities on page
-    r_all_none = strava_list_activities_page(None, 1)
+    r_all_none = get_page_of_activities(None, 1)
     assert r_all_none.status_code == 200
     r_all_none_json = r_all_none.json()
     assert r_all_none_json is not None
@@ -67,7 +67,7 @@ def test_strava_list_activities_page():
     assert "type" in r_all_none_json
     assert "start_date" in r_all_none_json
     # should return all activities because I have none prior to 2020
-    r_all_date = strava_list_activities_page("2019-12-22T19:41:05Z", 1)
+    r_all_date = get_page_of_activities("2019-12-22T19:41:05Z", 1)
     assert r_all_date.status_code == 200
     r_all_date_json = r_all_date.json()
     assert r_all_date_json is not None
@@ -79,11 +79,11 @@ def test_strava_list_activities_page():
     assert len(r_all_date_json) == len(r_all_none_json)
 
     # try to get activities from future is error
-    r = strava_list_activities_page("2025-12-22T19:41:05Z", 1)
+    r = get_page_of_activities("2025-12-22T19:41:05Z", 1)
     assert r.status_code != 200
 
 
-#@pytest.mark.skip
+@pytest.mark.skip
 def test_get_detailed_activity():
     """Assert all types are as strava says."""
     tokens = get_tokens()

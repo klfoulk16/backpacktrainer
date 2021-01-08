@@ -38,6 +38,26 @@ def runner(app):
     return app.test_cli_runner()
 
 @pytest.fixture
+def StravaTokens1():
+    return {
+        "token_type": "Bearer",
+        "access_token": "c2f3e0ebfc1154faf113231a3c82ab1e42087840",
+        "expires_at": 1610072927,
+        "expires_in": 21600,
+        "refresh_token": "e3884cfaeba0346fc12ead11b0ee23f724cbe4a8"}
+
+
+@pytest.fixture
+def StravaTokens2():
+    return {
+        "token_type": "Bearer",
+        "access_token": "hithisisatoken0ebfc1154faf113231a3c82ab1e42087840",
+        "expires_at": 1630092927,
+        "expires_in": 21600,
+        "refresh_token": "e3885cfaeba0346fc12ead11b0ee23f724cbe4a8"}
+
+
+@pytest.fixture
 def Activity1():
     return {
         "id" : 12345678987654321,
