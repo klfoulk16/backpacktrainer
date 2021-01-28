@@ -11,6 +11,7 @@
         integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
         crossorigin="anonymous"
     >
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <title>{% block title %}{% endblock %}</title>
   </head>
@@ -24,7 +25,8 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
+              <a class="nav-link active" aria-current="page" href="/">Home</a>
+              <a class="nav-link" href="weekly-summary" aria-disabled="true">Weekly Summary</a>
               <a class="nav-link disabled" href="#" aria-disabled="true">About</a>
             </div>
           </div>

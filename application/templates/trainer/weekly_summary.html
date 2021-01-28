@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Weekly Summaries
+{% endblock %}
+
+{% block content %}
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+    console.log('DOM fully loaded and parsed');
+    TESTER = document.getElementById('tester');
+    var trace1 = {
+        x: {{date|safe}},
+        y: {{distance}},
+        type: 'scatter',
+    };
+    var data = [trace1];
+    Plotly.newPlot( TESTER, data, {}, {responsive: true} );
+});
+</script>
+<div id="tester"></div>
+<br>
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Week (Ended On)</th>
+        <th scope="col">Distance</th>
+        <th scope="col">Elevation Gain</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in range(weekly.index.size) %}
+    <tr>
+        <th scope="row">{{ weekly.index[row] }}</th>
+        <td>{{ weekly['distance'][row] }}</td>
+        <td>{{ weekly['total_elevation_gain'][row] }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

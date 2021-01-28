@@ -119,7 +119,7 @@ def parse_description(activity):
         else:
             activity["weight"] = 0
         
-        knee_pain_format = re.compile("(knee pain|Knee Pain|Knee pain):\s?\d+")
+        knee_pain_format = re.compile(r"(knee pain|Knee Pain|Knee pain):\s?\d+")
         knee_pain = knee_pain_format.search(comments)
         if knee_pain:
             knee_pain = knee_pain.group()
@@ -128,7 +128,7 @@ def parse_description(activity):
         else:
             activity["knee_pain"] = 0
 
-        ground_format = re.compile("(snow|Snow|Rocky|rocky|pavement|Pavement|off-trail|Off-trail)")
+        ground_format = re.compile(r"(snow|Snow|Rocky|rocky|pavement|Pavement|off-trail|Off-trail|Off trail|off trail)")
         ground = ground_format.search(comments)
         if ground:
             activity['ground_type'] = ground.group().lower()

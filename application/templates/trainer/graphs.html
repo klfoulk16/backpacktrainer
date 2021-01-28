@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Graphs
+{% endblock %}
+
+{% block content %}
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+    console.log('DOM fully loaded and parsed');
+    TESTER = document.getElementById('tester');
+    var trace1 = {
+        x: {{date|safe}},
+        y: {{distance}},
+        type: 'scatter',
+    };
+    var data = [trace1];
+    Plotly.newPlot( TESTER, data, {}, {responsive: true} );
+});
+</script>
+<div id="tester"></div>
+
+{% endblock %}

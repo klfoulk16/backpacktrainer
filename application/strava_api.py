@@ -78,7 +78,7 @@ def get_tokens():
 
 def refresh_tokens(strava_tokens):
     """Uses strava refresh token to get a new set of tokens."""
-    return requests.post(
+    r = requests.post(
         url="https://www.strava.com/oauth/token",
         data={
             "client_id": os.getenv("CLIENT_ID"),
@@ -87,6 +87,9 @@ def refresh_tokens(strava_tokens):
             "refresh_token": strava_tokens["refresh_token"],
             },
         )
+    print(dir(r))
+    print(r.ok)
+    return r
 
 
 def get_detailed_activity(activity_id, strava_tokens):

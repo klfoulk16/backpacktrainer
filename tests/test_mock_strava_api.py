@@ -1,8 +1,7 @@
 # Local imports...
-from application.strava_api import refresh_tokens, get_detailed_activity, get_page_of_activities
+from application.strava_api import get_detailed_activity, get_page_of_activities
 
 # Third-party imports...
-import requests
 import pytest
 
 # Standard library imports...
@@ -11,29 +10,17 @@ from unittest.mock import Mock, patch
 # show pass/fail for each test, no long issues
 # pytest -v --tb=no
 
-@patch("application.strava_api.requests.post")
-def test_refresh_tokens(mock_post, StravaTokens1, StravaTokens2):
-    """Learning how to create mock objects that mimin an actual response object."""
-    old_strava_tokens = StravaTokens1
-    new_strava_tokens = StravaTokens2
-    # Configure the mock to return a response with an OK status code.
-    mock_post.return_value = Mock(ok=True)
-    mock_post.return_value.json.return_value = new_strava_tokens
-    response = refresh_tokens(old_strava_tokens)
-    assert response.ok is True
-    assert response.json() == new_strava_tokens
-
-
+@pytest.mark.skip
 def test_get_tokens():
     """I'm not sure how to mock this yet because it writes a file that I don't want overwritten."""
-    None
+    pass
 
-
+@pytest.mark.skip
 def test_get_initial_token():
     """Eventually I will change this flow so will leave the test till updated."""
-    None
+    pass
 
-
+@pytest.mark.skip
 class TestRequestsGet(object):
 
     @classmethod
@@ -44,7 +31,7 @@ class TestRequestsGet(object):
     @classmethod
     def teardown_class(cls):
         cls.mock_get_patcher.stop()
-    
+
     def test_get_detailed_activity(self, Activity1, StravaTokens1):
         """Assert returns detailed activity object."""
         self.mock_get.return_value = Mock(ok=True)
