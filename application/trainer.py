@@ -34,13 +34,18 @@ def weekly_summary():
     df.distance = df.distance.apply(convert_meters_miles)
     totals = df[["distance", "total_elevation_gain", "start_date"]]
     weekly = totals.groupby(pd.Grouper(key='start_date', freq='W')).sum()
-    
-    def decimal_display(value):
-        return f'{value:.2f}'
-    weekly.distance = weekly.distance.apply(decimal_display)
-    weekly.total_elevation_gain = weekly.total_elevation_gain.apply(decimal_display)
+
+    # get values for graph before stringifying
     date = list(weekly.index.strftime('%Y-%m-%d'))
     distance = list(weekly.distance)
+    
+    #stringify values to make decimals nicer
+    def decimal_display(value):
+        return f'{value:.2f}'
+
+    weekly.distance = weekly.distance.apply(decimal_display)
+    weekly.total_elevation_gain = weekly.total_elevation_gain.apply(decimal_display)
+
     return render_template('trainer/weekly_summary.html', weekly=weekly.sort_index(ascending=False), date=date, distance=distance)
 
     # totals:
