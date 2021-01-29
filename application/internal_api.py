@@ -3,6 +3,7 @@
 from application.db import get_db
 import re
 import datetime
+import csv
 
 
 def get_all_activities():
@@ -97,6 +98,46 @@ def insert_activity(activity):
         (activity['id'], activity["distance"], activity["moving_time"], activity["elapsed_time"], activity["total_elevation_gain"], activity["elev_high"], activity["elev_low"], activity["type"], activity["start_date"], activity["average_speed"], activity["gear_id"], activity["weight"], activity["knee_pain"], activity["ground_type"], activity["comments"])
     )
     db.commit()
+
+
+def upload_craw_csv(filename):
+    with open(filename, 'r', encoding='utf-8-sig') as data:
+        for line in csv.DictReader(data): 
+            if line["Activity Type"] in ["Walk", "Hike"]:
+                # convert row to format to insert into df
+                line['description'] = line.pop('Comment')
+                parse_description(line)
+
+                # convert miles to meters
+                line["distance"] = convert_miles_to_meters(line.pop('Distance in Miles'))
+                # convert time format
+                line["start_date"] = reformat_activity_date(line.pop("Activity Date"))
+
+                line['id'] = None
+                line["moving_time"] = 0
+                line["elapsed_time"] = 0
+                line["total_elevation_gain"] = 0
+                line["elev_high"] = 0
+                line["elev_low"] = 0
+                line["type"] = line.pop("Activity Type")
+                line["average_speed"] = 0
+                line["gear_id"] = 0
+
+                insert_activity(line)
+
+
+def convert_miles_to_meters(miles):
+    """Convert float miles to meters."""
+    if miles:
+        return round(float(miles) * 1609.34, 2)
+    else:
+        return 0
+
+
+def reformat_activity_date(date):
+    """Reformat craw csv date format to match the date format used by Strava."""
+    date = datetime.datetime.strptime(date, '%m/%d/%y')
+    return date.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def parse_description(activity):

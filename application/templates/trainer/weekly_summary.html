@@ -8,24 +8,84 @@
 <script>
     window.addEventListener('DOMContentLoaded', (event) => {
     console.log('DOM fully loaded and parsed');
-    TESTER = document.getElementById('tester');
+    DISTANCENWEIGHT = document.getElementById('distanceNweightVdate');
     var trace1 = {
         x: {{date|safe}},
         y: {{distance}},
         type: 'scatter',
+        name: "distance"
     };
-    var data = [trace1];
-    Plotly.newPlot( TESTER, data, {}, {responsive: true} );
+    var trace2 = {
+        x: {{date|safe}},
+        y: {{weight}},
+        type: 'scatter',
+        name: "weight"
+    };
+    var layout = {
+        title:'Distance and Average Weight per Mile'
+    };
+    var data = [trace1, trace2];
+    Plotly.newPlot( DISTANCENWEIGHT, data, layout, {responsive: true} );
 });
 </script>
-<div id="tester"></div>
-<br>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+    console.log('DOM fully loaded and parsed');
+    distanceNpainVdate = document.getElementById('distanceNpainVdate');
+    var trace1 = {
+        x: {{date|safe}},
+        y: {{distance}},
+        type: 'scatter',
+        name: 'distance'
+    };
+    var trace2 = {
+        x: {{date|safe}},
+        y: {{knee_pain}},
+        type: 'scatter',
+        name: 'pain'
+    };
+    var layout = {
+        title:'Distance and Knee Pain'
+    };
+    var data = [trace1, trace2];
+    Plotly.newPlot( distanceNpainVdate, data, layout, {responsive: true} );
+});
+</script>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+    console.log('DOM fully loaded and parsed');
+    distanceNelevationVdate = document.getElementById('distanceNelevationVdate');
+    var trace1 = {
+        x: {{date|safe}},
+        y: {{distance}},
+        type: 'scatter',
+        name: 'distance'
+    };
+    var trace2 = {
+        x: {{date|safe}},
+        y: {{elevation}},
+        type: 'scatter',
+        name: 'elevation'
+    };
+    var layout = {
+        title:'Distance and Elevation'
+    };
+    var data = [trace1, trace2];
+    Plotly.newPlot( distanceNelevationVdate, data, layout, {responsive: true} );
+});
+</script>
+<div id="distanceNweightVdate"></div>
+<div id="distanceNpainVdate"></div>
+<div id="distanceNelevationVdate"></div>
+
 <table class="table">
     <thead>
     <tr>
         <th scope="col">Week (Ended On)</th>
-        <th scope="col">Distance</th>
-        <th scope="col">Elevation Gain</th>
+        <th scope="col">Total Distance</th>
+        <th scope="col">Total Elevation Gain</th>
+        <th scope="col">Average Knee Pain per Walk</th>
+        <th scope="col">Average Weight per Mile</th>
     </tr>
     </thead>
     <tbody>
@@ -34,6 +94,8 @@
         <th scope="row">{{ weekly.index[row] }}</th>
         <td>{{ weekly['distance'][row] }}</td>
         <td>{{ weekly['total_elevation_gain'][row] }}</td>
+        <td>{{ weekly['knee_pain'][row] }}</td>
+        <td>{{ weekly['weight'][row] }}</td>
     </tr>
     {% endfor %}
     </tbody>
