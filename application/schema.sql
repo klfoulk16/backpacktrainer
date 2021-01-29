@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS activities;
 
 CREATE TABLE activities (
     id INTEGER PRIMARY KEY,
+    strava_id INTEGER,
     /* Given in meters */
     distance FLOAT,
     /* The activity's moving time, in seconds */

@@ -87,7 +87,7 @@ def test_get_all_activities(app):
         activities = get_all_activities()
         assert len(activities) == 2
         assert activities[0]['type'] == 'Hike'
-        assert activities[1]['id'] == 4526779166
+        assert activities[1]['strava_id'] == 4526779166
 
 
 def test_get_specific_activity(app):
@@ -96,7 +96,7 @@ def test_get_specific_activity(app):
         activity_id = 4526779165
         activity = get_specific_activity(activity_id)
         assert activity is not None
-        assert activity["id"] == activity_id
+        assert activity["strava_id"] == activity_id
 
 
 def test_insert_activity(app, Activity1):
@@ -112,7 +112,7 @@ def test_insert_activity(app, Activity1):
         inserted_activity = get_specific_activity(activity["id"])
         assert inserted_activity is not None
         # verify all important aspects of activity were inserted properly
-        assert inserted_activity["id"] == activity["id"]
+        assert inserted_activity["strava_id"] == activity["id"]
         assert inserted_activity["distance"] == activity["distance"]
         assert inserted_activity["moving_time"] == activity["moving_time"]
         assert inserted_activity["elapsed_time"] == activity["elapsed_time"]

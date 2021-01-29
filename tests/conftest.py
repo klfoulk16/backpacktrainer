@@ -416,7 +416,7 @@ def Activity2():
 def Activity3():
     # description intentionally None
     return {
-        "id" : 12345678987654322,
+        "id" : None,
         "resource_state" : 3,
         "external_id" : "garmin_push_12345678987654321",
         "upload_id" : 98765432123456789,
@@ -430,8 +430,8 @@ def Activity3():
         "elapsed_time" : 4410,
         "total_elevation_gain" : 516,
         "type" : "Hike",
-        "start_date" : "2018-02-16T14:52:54Z",
-        "start_date_local" : "2018-02-16T06:52:54Z",
+        "start_date" : "2021-01-16T14:52:54Z",
+        "start_date_local" : "2021-01-16T06:52:54Z",
         "timezone" : "(GMT-08:00) America/Los_Angeles",
         "utc_offset" : -28800,
         "start_latlng" : [ 37.83, -122.26 ],

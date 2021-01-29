@@ -23,7 +23,7 @@ def get_specific_activity(id):
     """Returns the activity with {id} from activities table in database"""
     db = get_db()
     activity = db.execute(
-        'SELECT * FROM activities WHERE id=?', (id,)
+        'SELECT * FROM activities WHERE strava_id=?', (id,)
     ).fetchone()
     return activity
 
@@ -93,7 +93,7 @@ def insert_activity(activity):
     """Inserts a prepared Activity dict into the activities table."""
     db = get_db()
     db.execute(
-        'INSERT INTO activities (id, distance, moving_time, elapsed_time, total_elevation_gain, elev_high, elev_low, type, start_date, average_speed, gear_id, weight, knee_pain, ground_type, comments)'
+        'INSERT INTO activities (strava_id, distance, moving_time, elapsed_time, total_elevation_gain, elev_high, elev_low, type, start_date, average_speed, gear_id, weight, knee_pain, ground_type, comments)'
         ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         (activity['id'], activity["distance"], activity["moving_time"], activity["elapsed_time"], activity["total_elevation_gain"], activity["elev_high"], activity["elev_low"], activity["type"], activity["start_date"], activity["average_speed"], activity["gear_id"], activity["weight"], activity["knee_pain"], activity["ground_type"], activity["comments"])
     )

@@ -1,5 +1,5 @@
 INSERT INTO activities(
-  id,
+  strava_id,
   distance,
   moving_time,
   elapsed_time,

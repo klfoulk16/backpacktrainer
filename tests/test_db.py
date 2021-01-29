@@ -41,11 +41,11 @@ def test_db_values(app):
      into the databased and able to be called."""
     with app.app_context():
         assert get_db().execute(
-            "SELECT * FROM activities WHERE id = 4526779166"
+            "SELECT * FROM activities WHERE strava_id = 4526779166"
         ).fetchone() is not None
 
         activity = get_db().execute(
-            "SELECT * FROM activities WHERE id = 4526779165"
+            "SELECT * FROM activities WHERE strava_id = 4526779165"
         ).fetchone()
 
         assert activity["type"] == "Hike"

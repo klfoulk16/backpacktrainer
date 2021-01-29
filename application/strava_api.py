@@ -163,11 +163,8 @@ def download_new_activities():
     """Downloads all new activities from strava (activities added after most recent activity in DB)."""
     strava_tokens = get_tokens()
 
-    # get id of last activity in db
-    db = get_db()
-    last_activity_date = db.execute(
-        "SELECT MAX(start_date) FROM activities"
-    ).fetchone()[0]
+    # get id of last downloaded activity in db
+    last_activity_date = get_last_activity_date()
 
     page = 1
 
@@ -197,3 +194,11 @@ def download_new_activities():
                     print(f"Not able to fetch detailed summary for activity {r[x]['id']}")
 
         page += 1
+
+
+def get_last_activity_date():
+    """Returns last start_date of last activity downloaded from Strava (not manual upload)"""
+    db = get_db()
+    return db.execute(
+        "SELECT MAX(start_date) FROM activities WHERE strava_id IS NOT NULL"
+    ).fetchone()[0]
